@@ -11,4 +11,3 @@ def test_logic_not_some(file_1, file_2):
     result = generate_diff(file_1, file_2)
 
     assert "+" in result or "-" in result
-

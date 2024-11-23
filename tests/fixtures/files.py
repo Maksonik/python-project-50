@@ -5,9 +5,11 @@ import pytest
 def file_1():
     return "./files/file1.json"
 
+
 @pytest.fixture
 def file_some_1():
     return "./files/file1.json"
+
 
 @pytest.fixture
 def file_2():
