@@ -1,16 +1,21 @@
 import json
+
 import yaml
 
 
-def generate_diff(file_path1: str, file_path2: str) -> str:
+def _read_files(file_path1, file_path2):
     with open(file_path1) as file1, open(file_path2) as file2:
         if "json" in file_path2:
-                data1 = json.load(file1)
-                data2 = json.load(file2)
+            data1 = json.load(file1)
+            data2 = json.load(file2)
         elif "yml" in file_path2 or "yaml" in file_path1:
-                data1 = yaml.load(file1, yaml.CLoader)
-                data2 = yaml.load(file2, yaml.CLoader)
+            data1 = yaml.load(file1, yaml.CLoader)
+            data2 = yaml.load(file2, yaml.CLoader)
+    return data1, data2
 
+
+def generate_diff(file_path1: str, file_path2: str) -> str:
+    data1, data2 = _read_files(file_path1, file_path2)
     all_keys = sorted(set(data1.keys()).union(set(data2.keys())))
 
     diff_lines = []

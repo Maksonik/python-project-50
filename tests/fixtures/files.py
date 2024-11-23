@@ -25,6 +25,7 @@ def file_1_yml():
 def file_some_1_yml():
     return "./files/file1.yml"
 
+
 @pytest.fixture
 def file_2_yml():
     return "./files/file2.yml"
