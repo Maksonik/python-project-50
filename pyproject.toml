@@ -8,6 +8,9 @@ packages = [
   { include = "gendiff" },
 ]
 
+[tool.coverage.run]
+source = ["hexlet-code"]
+
 [tool.poetry.dependencies]
 python = "^3.12"
 
