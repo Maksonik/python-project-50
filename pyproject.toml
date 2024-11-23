@@ -13,6 +13,7 @@ source = ["hexlet-code"]
 
 [tool.poetry.dependencies]
 python = "^3.12"
+pyyaml = "^6.0.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -25,6 +26,7 @@ pytest-cov = "^6.0.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
 
 
 
