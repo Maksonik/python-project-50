@@ -1,4 +1,3 @@
-
 from gendiff.build_diff import build_diff, read_file
 from gendiff.formatters import plain, stylish, json
 
