@@ -3,33 +3,65 @@ import json
 import yaml
 
 
-def _read_files(file_path1, file_path2):
-    with open(file_path1) as file1, open(file_path2) as file2:
-        if "json" in file_path2:
-            data1 = json.load(file1)
-            data2 = json.load(file2)
-        elif "yml" in file_path2 or "yaml" in file_path1:
-            data1 = yaml.load(file1, yaml.CLoader)
-            data2 = yaml.load(file2, yaml.CLoader)
-    return data1, data2
+def read_file(file_path):
+    with open(file_path) as file:
+        if file_path.endswith(('.yaml', '.yml')):
+            return yaml.load(file, Loader=yaml.CLoader)
+        elif file_path.endswith('.json'):
+            return json.load(file)
+    raise ValueError("Unsupported file format")
 
 
-def generate_diff(file_path1: str, file_path2: str) -> str:
-    data1, data2 = _read_files(file_path1, file_path2)
-    all_keys = sorted(set(data1.keys()).union(set(data2.keys())))
+def build_diff(data1, data2):
+    keys = sorted(data1.keys() | data2.keys())
+    diff = {}
+    for key in keys:
+        if key not in data1:
+            diff[key] = {"status": "added", "value": data2[key]}
+        elif key not in data2:
+            diff[key] = {"status": "removed", "value": data1[key]}
+        elif isinstance(data1[key], dict) and isinstance(data2[key], dict):
+            diff[key] = {"status": "nested", "children": build_diff(data1[key], data2[key])}
+        elif data1[key] != data2[key]:
+            diff[key] = {"status": "changed", "old_value": data1[key], "new_value": data2[key]}
+        else:
+            diff[key] = {"status": "unchanged", "value": data1[key]}
+    return diff
 
-    diff_lines = []
-    for key in all_keys:
-        if key in data1 and key in data2:
-            if data1[key] == data2[key]:
-                diff_lines.append(f"    {key}: {data1[key]}")
-            else:
-                diff_lines.append(f"  - {key}: {data1[key]}")
-                diff_lines.append(f"  + {key}: {data2[key]}")
-        elif key in data1:
-            diff_lines.append(f"  - {key}: {data1[key]}")
-        elif key in data2:
-            diff_lines.append(f"  + {key}: {data2[key]}")
 
-    result = "{\n" + "\n".join(diff_lines) + "\n}"
-    return result
+def format_stylish(diff, depth=0):
+    indent = " " * (depth * 4)
+    child_indent = " " * ((depth + 1) * 4)
+    lines = []
+
+    status_actions = {
+        "added": lambda k, v: f"{indent}  + {k}: {format_value(v['value'], depth + 1)}",
+        "removed": lambda k, v: f"{indent}  - {k}: {format_value(v['value'], depth + 1)}",
+        "changed": lambda k, v: (
+            f"{indent}  - {k}: {format_value(v['old_value'], depth + 1)}\n"
+            f"{indent}  + {k}: {format_value(v['new_value'], depth + 1)}"
+        ),
+        "nested": lambda k, v: f"{indent}    {k}: {{\n{format_stylish(v['children'], depth + 1)}\n{child_indent}}}",
+        "unchanged": lambda k, v: f"{indent}    {k}: {format_value(v['value'], depth + 1)}",
+    }
+
+    for key, value in diff.items():
+        lines.append(status_actions[value["status"]](key, value))
+
+    return "\n".join(lines)
+
+
+def format_value(value, depth):
+    if isinstance(value, dict):
+        indent = " " * (depth * 4)
+        child_indent = " " * ((depth + 1) * 4)
+        lines = [f"{child_indent}{k}: {format_value(v, depth + 1)}" for k, v in value.items()]
+        return f"{{\n{'\n'.join(lines)}\n{indent}}}"
+    return json.dumps(value)
+
+
+def generate_diff(file_path1, file_path2):
+    data1 = read_file(file_path1)
+    data2 = read_file(file_path2)
+    diff = build_diff(data1, data2)
+    return f"{{\n{format_stylish(diff)}\n}}".replace('"', '')
