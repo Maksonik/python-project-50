@@ -17,12 +17,14 @@ def format_diff(diff, parent=''):
         status = value["status"]
 
         if status == "added":
-            lines.append(f"Property '{full_key}' was added with value: {format_value(value['value'])}")
+            lines.append(f"Property '{full_key}' was added"
+                         f" with value: {format_value(value['value'])}")
         elif status == "removed":
             lines.append(f"Property '{full_key}' was removed")
         elif status == "changed":
             lines.append(
-                f"Property '{full_key}' was updated. From {format_value(value['old_value'])}"
+                f"Property '{full_key}' was updated."
+                f" From {format_value(value['old_value'])}"
                 f" to {format_value(value['new_value'])}")
         elif status == "nested":
             lines.append(format_diff(value["children"], full_key))
