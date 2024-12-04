@@ -15,4 +15,3 @@ def main():
 
     result = generate_diff(args.first_file, args.second_file, format)
     print(result)
-    return result
