@@ -12,4 +12,5 @@ def generate_diff(file_path1, file_path2, format_type='stylish'):
         return plain.plain(diff)
     elif format_type == 'json':
         return json.json_format(diff)
-    return stylish.stylish(diff)
+    elif format_type == 'stylish':
+        return stylish.stylish(diff)

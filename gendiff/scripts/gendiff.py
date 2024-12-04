@@ -11,7 +11,8 @@ def main():
     parser.description = "Compares two configuration \
                         files and shows a difference."
     args = parser.parse_args()
+    format = args.format or "stylish"
 
-    result = generate_diff(args.first_file, args.second_file, args.format)
+    result = generate_diff(args.first_file, args.second_file, format)
     print(result)
     return result
