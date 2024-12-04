@@ -12,5 +12,5 @@ def main():
                         files and shows a difference."
     args = parser.parse_args()
 
-    result = generate_diff(args.first_file, args.second_file)
+    result = generate_diff(args.first_file, args.second_file, args.format)
     return result

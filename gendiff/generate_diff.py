@@ -2,6 +2,8 @@ import json
 
 import yaml
 
+from gendiff.formatters import plain, stylish
+
 
 def read_file(file_path):
     with open(file_path) as file:
@@ -28,40 +30,12 @@ def build_diff(data1, data2):
             diff[key] = {"status": "unchanged", "value": data1[key]}
     return diff
 
-
-def format_stylish(diff, depth=0):
-    indent = " " * (depth * 4)
-    child_indent = " " * ((depth + 1) * 4)
-    lines = []
-
-    status_actions = {
-        "added": lambda k, v: f"{indent}  + {k}: {format_value(v['value'], depth + 1)}",
-        "removed": lambda k, v: f"{indent}  - {k}: {format_value(v['value'], depth + 1)}",
-        "changed": lambda k, v: (
-            f"{indent}  - {k}: {format_value(v['old_value'], depth + 1)}\n"
-            f"{indent}  + {k}: {format_value(v['new_value'], depth + 1)}"
-        ),
-        "nested": lambda k, v: f"{indent}    {k}: {{\n{format_stylish(v['children'], depth + 1)}\n{child_indent}}}",
-        "unchanged": lambda k, v: f"{indent}    {k}: {format_value(v['value'], depth + 1)}",
-    }
-
-    for key, value in diff.items():
-        lines.append(status_actions[value["status"]](key, value))
-
-    return "\n".join(lines)
-
-
-def format_value(value, depth):
-    if isinstance(value, dict):
-        indent = " " * (depth * 4)
-        child_indent = " " * ((depth + 1) * 4)
-        lines = [f"{child_indent}{k}: {format_value(v, depth + 1)}" for k, v in value.items()]
-        return f"{{\n{'\n'.join(lines)}\n{indent}}}"
-    return json.dumps(value)
-
-
-def generate_diff(file_path1, file_path2):
+def generate_diff(file_path1, file_path2, format_type='stylish'):
     data1 = read_file(file_path1)
     data2 = read_file(file_path2)
     diff = build_diff(data1, data2)
-    return f"{{\n{format_stylish(diff)}\n}}".replace('"', '')
+
+    if format_type == 'plain':
+        return plain.plain(diff)
+    elif format_type == 'stylish':
+        return stylish.stylish(diff)
